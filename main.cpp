@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #define GLFW_INCLUDE_VULKAN
 
 #include <GLFW/glfw3.h>
