@@ -47,4 +47,6 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
                                    VkDebugUtilsMessengerEXT debugMessenger,
                                    const VkAllocationCallbacks *pAllocator);
 
+void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
 #endif //VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H

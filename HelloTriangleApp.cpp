@@ -42,6 +42,7 @@ void HelloTriangleApp::initWindow() {
 
 void HelloTriangleApp::initVulkan() {
   createInstance();
+  setupDebugMessenger();
 }
 
 void HelloTriangleApp::createInstance() {
@@ -93,13 +94,18 @@ void HelloTriangleApp::createInstance() {
     }
   }
 
+  VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
   if (enableValidationLayers) {
     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
     createInfo.ppEnabledLayerNames = validationLayers.data();
+
+    populateDebugMessengerCreateInfo(debugCreateInfo);
+    createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
   } else {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "UnreachableCode"
     createInfo.enabledLayerCount = 0;
+    createInfo.pNext = nullptr;
 #pragma clang diagnostic pop
   }
 
@@ -112,6 +118,7 @@ void HelloTriangleApp::createInstance() {
     throw std::runtime_error("LsL60VI8oa :: failed to create instance!");
   }
 }
+
 
 void HelloTriangleApp::mainLoop() {
   while (!glfwWindowShouldClose(window)) {
@@ -177,9 +184,9 @@ std::vector<const char *> HelloTriangleApp::getRequiredExtensions() {
 }
 
 VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                      const VkAllocationCallbacks* pAllocator,
-                                      VkDebugUtilsMessengerEXT* pDebugMessenger) {
+                                      const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+                                      const VkAllocationCallbacks *pAllocator,
+                                      VkDebugUtilsMessengerEXT *pDebugMessenger) {
   auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
   if (func != nullptr) {
     return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -188,7 +195,8 @@ VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
   }
 }
 
-void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                   const VkAllocationCallbacks *pAllocator) {
   auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
   if (func != nullptr) {
     func(instance, debugMessenger, pAllocator);
@@ -196,22 +204,28 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 }
 
 
-void HelloTriangleApp::setupDebugMessenger() {
-  if (!enableValidationLayers) return;
-
-  VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
+  createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
   createInfo.messageSeverity = 0
                                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
                                | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-                               | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
-                               ;
+                               | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
   createInfo.messageType = 0
                            | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
                            | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-                           | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
-                           ;
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
   createInfo.pfnUserCallback = debugCallback;
+}
+
+void HelloTriangleApp::setupDebugMessenger() {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
+  if (!enableValidationLayers) return;
+#pragma clang diagnostic pop
+
+  VkDebugUtilsMessengerCreateInfoEXT createInfo;
+  populateDebugMessengerCreateInfo(createInfo);
   createInfo.pUserData = this; // Optional
 
   VkResult result = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
