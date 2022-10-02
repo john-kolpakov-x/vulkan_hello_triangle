@@ -22,6 +22,7 @@ private:
   /*initVulkan*/void createInstance();
   /*initVulkan*/bool checkValidationLayerSupport();
   /*initVulkan*/std::vector<const char*> getRequiredExtensions();
+  /*initVulkan*/void setupDebugMessenger();
 
   void mainLoop();
 
@@ -34,5 +35,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData);
 
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                      const VkAllocationCallbacks* pAllocator,
+                                      VkDebugUtilsMessengerEXT* pDebugMessenger);
 
 #endif //VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H

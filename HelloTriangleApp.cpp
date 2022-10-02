@@ -172,6 +172,42 @@ std::vector<const char *> HelloTriangleApp::getRequiredExtensions() {
   return extensions;
 }
 
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                      const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                      const VkAllocationCallbacks* pAllocator,
+                                      VkDebugUtilsMessengerEXT* pDebugMessenger) {
+  auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+  if (func != nullptr) {
+    return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+  } else {
+    return VK_ERROR_EXTENSION_NOT_PRESENT;
+  }
+}
+
+void HelloTriangleApp::setupDebugMessenger() {
+  if (!enableValidationLayers) return;
+
+  VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+  createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+  createInfo.messageSeverity = 0
+                               | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
+                               | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
+                               | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT
+                               ;
+  createInfo.messageType = 0
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+                           | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+                           ;
+  createInfo.pfnUserCallback = debugCallback;
+  createInfo.pUserData = this; // Optional
+
+  VkResult result = CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger);
+  if (result != VK_SUCCESS) {
+    throw runtime_error("eID5O7K0ig :: failed to set up debug messenger!");
+  }
+}
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     /**
      * VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: диагностическое сообщение
@@ -193,6 +229,9 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
      * objectCount: количество объектов в массиве
      */
     const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+    /**
+     * В нашем случае это HelloTriangleApp*
+     */
     void *pUserData) {
 
   /*
