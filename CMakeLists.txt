@@ -8,7 +8,7 @@ find_package(glm REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++17 -O2")
 
-add_executable(vulkan_hello_triangle main.cpp)
+add_executable(vulkan_hello_triangle main.cpp HelloTriangleApp.cpp HelloTriangleApp.h)
 target_link_libraries (vulkan_hello_triangle glfw)
 target_link_libraries (vulkan_hello_triangle ${Vulkan_LIBRARY})
 target_link_libraries (vulkan_hello_triangle ${CMAKE_DL_LIBS})
