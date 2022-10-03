@@ -2,6 +2,7 @@
 #define VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H
 
 #include <vector>
+#include <optional>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -53,5 +54,15 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
                                    const VkAllocationCallbacks *pAllocator);
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphicsFamily;
+
+  bool isComplete() {
+    return graphicsFamily.has_value();
+  }
+};
+
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
 #endif //VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H

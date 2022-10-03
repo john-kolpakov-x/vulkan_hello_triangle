@@ -1,6 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedMacroInspection"
-
 #define GLFW_INCLUDE_VULKAN
 
 #include <GLFW/glfw3.h>
@@ -323,6 +320,12 @@ void HelloTriangleApp::pickPhysicalDevice() {
 
 bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice device) {
 
+  QueueFamilyIndices indices = findQueueFamilies(device);
+
+  if (!indices.isComplete()) {
+    return false;
+  }
+
   VkPhysicalDeviceProperties deviceProperties;
   vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
@@ -333,4 +336,24 @@ bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice device) {
          deviceFeatures.geometryShader;
 }
 
-#pragma clang diagnostic pop // for #pragma ide diagnostic ignored "OCUnusedMacroInspection"
+QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+
+  uint32_t queueFamilyCount = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+  std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+  QueueFamilyIndices indices{};
+
+  int i = 0;
+  for (const auto &queueFamily: queueFamilies) {
+    if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      indices.graphicsFamily = i;
+    }
+
+    i++;
+  }
+
+  return indices;
+}
