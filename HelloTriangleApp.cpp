@@ -1,5 +1,4 @@
 #define GLFW_INCLUDE_VULKAN
-
 #include <GLFW/glfw3.h>
 
 #include <cstdlib>
@@ -41,6 +40,7 @@ void HelloTriangleApp::initVulkan() {
   createInstance();
   setupDebugMessenger();
   pickPhysicalDevice();
+  createLogicalDevice();
 }
 
 void HelloTriangleApp::createInstance() {
@@ -125,6 +125,8 @@ void HelloTriangleApp::mainLoop() {
 }
 
 void HelloTriangleApp::cleanup() {
+  vkDestroyDevice(device, nullptr);
+
   if (enableValidationLayers) {
     DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
   }
@@ -232,6 +234,9 @@ void HelloTriangleApp::setupDebugMessenger() {
   }
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnusedParameter"
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     /**
      * VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: диагностическое сообщение
@@ -281,6 +286,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
   return VK_FALSE;
 }
 
+#pragma clang diagnostic pop
+
 void HelloTriangleApp::pickPhysicalDevice() {
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
@@ -288,20 +295,20 @@ void HelloTriangleApp::pickPhysicalDevice() {
     throw runtime_error("failed to find GPUs with Vulkan support!");
   }
 
-  std::vector<VkPhysicalDevice> devices(deviceCount);
-  vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+  std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
+  vkEnumeratePhysicalDevices(instance, &deviceCount, physicalDevices.data());
 
-  cout << "0ab57f33NP :: Physical devices:" << endl;
-  for (const auto &device: devices) {
+  cout << "0ab57f33NP :: Physical physicalDevices:" << endl;
+  for (const auto &dev: physicalDevices) {
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(device, &deviceProperties);
-    cout << "    qCnwQb5NcF :: device id = " << deviceProperties.deviceID;
-    cout << ", device name = " << deviceProperties.deviceName << endl;
+    vkGetPhysicalDeviceProperties(dev, &deviceProperties);
+    cout << "    qCnwQb5NcF :: dev id = " << deviceProperties.deviceID;
+    cout << ", dev name = " << deviceProperties.deviceName << endl;
   }
 
-  for (const auto &device: devices) {
-    if (isDeviceSuitable(device)) {
-      physicalDevice = device;
+  for (const auto &dev: physicalDevices) {
+    if (isDeviceSuitable(dev)) {
+      physicalDevice = dev;
       break;
     }
   }
@@ -318,19 +325,19 @@ void HelloTriangleApp::pickPhysicalDevice() {
 
 }
 
-bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice device) {
+bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice aDevice) {
 
-  QueueFamilyIndices indices = findQueueFamilies(device);
+  QueueFamilyIndices indices = findQueueFamilies(aDevice);
 
   if (!indices.isComplete()) {
     return false;
   }
 
   VkPhysicalDeviceProperties deviceProperties;
-  vkGetPhysicalDeviceProperties(device, &deviceProperties);
+  vkGetPhysicalDeviceProperties(aDevice, &deviceProperties);
 
   VkPhysicalDeviceFeatures deviceFeatures;
-  vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+  vkGetPhysicalDeviceFeatures(aDevice, &deviceFeatures);
 
   return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
          deviceFeatures.geometryShader;
@@ -356,4 +363,43 @@ QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
   }
 
   return indices;
+}
+
+void HelloTriangleApp::createLogicalDevice() {
+  QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+
+  VkDeviceQueueCreateInfo queueCreateInfo{};
+  queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+  queueCreateInfo.queueCount = 1;
+
+  float queuePriority = 1.0f;
+  queueCreateInfo.pQueuePriorities = &queuePriority;
+
+  VkPhysicalDeviceFeatures deviceFeatures{};
+
+  VkDeviceCreateInfo createInfo{};
+  createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+  createInfo.pQueueCreateInfos = &queueCreateInfo;
+  createInfo.queueCreateInfoCount = 1;
+
+  createInfo.pEnabledFeatures = &deviceFeatures;
+
+  createInfo.enabledExtensionCount = 0;
+
+  if (enableValidationLayers) {
+    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+    createInfo.ppEnabledLayerNames = validationLayers.data();
+  } else {
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
+    createInfo.enabledLayerCount = 0;
+#pragma clang diagnostic pop
+  }
+
+  VkResult result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+  if (result != VK_SUCCESS) {
+    throw std::runtime_error("UHBrO995SD :: failed to create logical device!");
+  }
 }

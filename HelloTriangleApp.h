@@ -16,6 +16,7 @@ private:
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
   VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+  VkDevice device;
 
   void initWindow();
 
@@ -31,7 +32,9 @@ private:
 
   /*initVulkan*/void pickPhysicalDevice();
 
-  /*initVulkan*/bool isDeviceSuitable(VkPhysicalDevice device);
+  /*initVulkan*/bool isDeviceSuitable(VkPhysicalDevice aDevice);
+
+  /*initVulkan*/void createLogicalDevice();
 
   void mainLoop();
 
@@ -58,7 +61,7 @@ void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create
 struct QueueFamilyIndices {
   std::optional<uint32_t> graphicsFamily;
 
-  bool isComplete() {
+  [[nodiscard]] bool isComplete() const {
     return graphicsFamily.has_value();
   }
 };
