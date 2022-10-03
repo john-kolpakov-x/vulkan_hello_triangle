@@ -402,4 +402,6 @@ void HelloTriangleApp::createLogicalDevice() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("UHBrO995SD :: failed to create logical device!");
   }
+
+  vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 }
