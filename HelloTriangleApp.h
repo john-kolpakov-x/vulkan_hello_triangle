@@ -14,6 +14,7 @@ private:
   GLFWwindow *window;
   VkInstance instance;
   VkDebugUtilsMessengerEXT debugMessenger;
+  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
   void initWindow();
 
@@ -26,6 +27,10 @@ private:
   /*initVulkan*/std::vector<const char *> getRequiredExtensions();
 
   /*initVulkan*/void setupDebugMessenger();
+
+  /*initVulkan*/void pickPhysicalDevice();
+
+  /*initVulkan*/bool isDeviceSuitable(VkPhysicalDevice device);
 
   void mainLoop();
 

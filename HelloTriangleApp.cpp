@@ -43,6 +43,7 @@ void HelloTriangleApp::initWindow() {
 void HelloTriangleApp::initVulkan() {
   createInstance();
   setupDebugMessenger();
+  pickPhysicalDevice();
 }
 
 void HelloTriangleApp::createInstance() {
@@ -271,7 +272,8 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
    */
 
-  std::cerr << "xWDy1vJH8c :: validation layer: " << pCallbackData->pMessage << std::endl;
+  // TODO validation message
+  //std::cerr << "xWDy1vJH8c :: validation layer: " << pCallbackData->pMessage << std::endl;
 
   /*
    Callback-функция возвращает VkBool32 тип. Результат указывает, нужно ли прервать вызов,
@@ -280,6 +282,55 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
    слоев валидации, в нашем же случае нужно вернуть VK_FALSE
    */
   return VK_FALSE;
+}
+
+void HelloTriangleApp::pickPhysicalDevice() {
+  uint32_t deviceCount = 0;
+  vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+  if (deviceCount == 0) {
+    throw runtime_error("failed to find GPUs with Vulkan support!");
+  }
+
+  std::vector<VkPhysicalDevice> devices(deviceCount);
+  vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+  cout << "0ab57f33NP :: Physical devices:" << endl;
+  for (const auto &device: devices) {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+    cout << "    qCnwQb5NcF :: device id = " << deviceProperties.deviceID;
+    cout << ", device name = " << deviceProperties.deviceName << endl;
+  }
+
+  for (const auto &device: devices) {
+    if (isDeviceSuitable(device)) {
+      physicalDevice = device;
+      break;
+    }
+  }
+
+  if (physicalDevice == VK_NULL_HANDLE) {
+    throw runtime_error("failed to find a suitable GPU!");
+  }
+
+  {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    cout << "8VRpTvWXY6 :: Selected physical device: " << deviceProperties.deviceName << endl;
+  }
+
+}
+
+bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice device) {
+
+  VkPhysicalDeviceProperties deviceProperties;
+  vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+  VkPhysicalDeviceFeatures deviceFeatures;
+  vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+  return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+         deviceFeatures.geometryShader;
 }
 
 #pragma clang diagnostic pop // for #pragma ide diagnostic ignored "OCUnusedMacroInspection"
