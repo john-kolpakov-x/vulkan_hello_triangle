@@ -80,6 +80,8 @@ private:
 
   /*initVulkan*/bool isDeviceSuitable(VkPhysicalDevice aDevice);
 
+  /*initVulkan*/bool checkDeviceExtensionSupport(VkPhysicalDevice aDevice);
+
   /*initVulkan*/QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev);
 
   /*initVulkan*/void createLogicalDevice();

@@ -16,6 +16,10 @@ const vector<const char *> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
+const std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -339,6 +343,10 @@ bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice aDevice) {
     return false;
   }
 
+  bool extensionSupported = checkDeviceExtensionSupport(aDevice);
+
+  if (!extensionSupported) return false;
+
   VkPhysicalDeviceProperties deviceProperties;
   vkGetPhysicalDeviceProperties(aDevice, &deviceProperties);
 
@@ -347,6 +355,23 @@ bool HelloTriangleApp::isDeviceSuitable(VkPhysicalDevice aDevice) {
 
   return deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
          deviceFeatures.geometryShader;
+}
+
+bool HelloTriangleApp::checkDeviceExtensionSupport(VkPhysicalDevice aDevice) {
+
+  uint32_t extensionCount;
+  vkEnumerateDeviceExtensionProperties(aDevice, nullptr, &extensionCount, nullptr);
+
+  std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+  vkEnumerateDeviceExtensionProperties(aDevice, nullptr, &extensionCount, availableExtensions.data());
+
+  std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+  for (const auto& extension : availableExtensions) {
+    requiredExtensions.erase(extension.extensionName);
+  }
+
+  return requiredExtensions.empty();
 }
 
 QueueFamilyIndices HelloTriangleApp::findQueueFamilies(VkPhysicalDevice dev) {
@@ -385,7 +410,7 @@ void HelloTriangleApp::createLogicalDevice() {
   std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
   float queuePriority = 1.0f;
-  for (uint32_t queueFamily : uniqueQueueFamilies) {
+  for (uint32_t queueFamily: uniqueQueueFamilies) {
     VkDeviceQueueCreateInfo queueCreateInfo{};
     queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
     queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -404,7 +429,8 @@ void HelloTriangleApp::createLogicalDevice() {
 
   createInfo.pEnabledFeatures = &deviceFeatures;
 
-  createInfo.enabledExtensionCount = 0;
+  createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+  createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
   if (enableValidationLayers) {
     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
