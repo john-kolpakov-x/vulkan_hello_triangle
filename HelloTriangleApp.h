@@ -16,6 +16,12 @@ struct QueueFamilyIndices {
   }
 };
 
+struct SwapChainSupportDetails {
+  VkSurfaceCapabilitiesKHR capabilities;
+  std::vector<VkSurfaceFormatKHR> formats;
+  std::vector<VkPresentModeKHR> presentModes;
+};
+
 class HelloTriangleApp {
 public:
   int run();
@@ -62,6 +68,13 @@ private:
    */
   VkQueue presentQueue;
 
+  /**
+   * Цепочка обновления. Она занимается поставкой прорисованных пикселей на экран окна.
+   *
+   * При изменении размера окна этот swap chain нужно пересоздать с другим расширением.
+   */
+  VkSwapchainKHR swapChain;
+
   void initWindow();
 
   void initVulkan();
@@ -85,6 +98,17 @@ private:
   /*initVulkan*/QueueFamilyIndices findQueueFamilies(VkPhysicalDevice dev);
 
   /*initVulkan*/void createLogicalDevice();
+
+  /*initVulkan*/SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice aDevice);
+
+  /*initVulkan*/VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+
+  /*initVulkan*/VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+
+  /*initVulkan*/VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+  /*initVulkan*/void createSwapChain();
+
 
   void mainLoop();
 
