@@ -584,4 +584,12 @@ void HelloTriangleApp::createSwapChain() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("2R1UY4ujLc :: failed to create swap chain!");
   }
+
+  vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+  swapChainImages.resize(imageCount);
+  vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+
+  swapChainImageFormat = surfaceFormat.format;
+  swapChainExtent = extent;
+
 }

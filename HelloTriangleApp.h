@@ -75,6 +75,21 @@ private:
    */
   VkSwapchainKHR swapChain;
 
+  /**
+   * Хранение дескрипторов изображений, которые будут показываться на форме, как результат рендеринга
+   */
+  std::vector<VkImage> swapChainImages;
+
+  /**
+   * Формат картинок, работающих в цепочке обновления.
+   */
+  VkFormat swapChainImageFormat;
+
+  /**
+   * Разрешение картинок, работающих в цепочке обновления.
+   */
+  VkExtent2D swapChainExtent;
+
   void initWindow();
 
   void initVulkan();
