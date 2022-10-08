@@ -96,6 +96,11 @@ private:
    */
   std::vector<VkImageView> swapChainImageViews;
 
+  /**
+   * Здесь задаются значения глобальных переменных, которые используются в шейдерах.
+   */
+  VkPipelineLayout pipelineLayout;
+
   void initWindow();
 
   void initVulkan();

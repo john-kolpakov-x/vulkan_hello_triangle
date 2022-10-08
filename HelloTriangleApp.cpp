@@ -139,6 +139,8 @@ void HelloTriangleApp::mainLoop() {
 }
 
 void HelloTriangleApp::cleanup() {
+  vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+
   for (auto imageView: swapChainImageViews) {
     vkDestroyImageView(device, imageView, nullptr);
   }
@@ -295,9 +297,28 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 
    */
 
-  // TODO validation message
-  //std::cerr << "xWDy1vJH8c :: validation layer: " << pCallbackData->pMessage << std::endl;
+  char const *severityText = NULL;
 
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
+    severityText = "VERB";
+  }
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    severityText = "INFO";
+  }
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    severityText = "WARN";
+  }
+  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+    severityText = "ERROR";
+  }
+  if (severityText == NULL) {
+    severityText = "UNKNOWN";
+  }
+
+  // TODO validation message
+  if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    std::cerr << "xWDy1vJH8c :: validation layer: " << severityText << " " << pCallbackData->pMessage << std::endl;
+  }
   /*
    Callback-функция возвращает VkBool32 тип. Результат указывает, нужно ли прервать вызов,
    создавший сообщение. Если callback-функция возвращает VK_TRUE, вызов прерывается и возвращается
@@ -693,6 +714,98 @@ void HelloTriangleApp::createGraphicsPipeline() {
   //fragShaderStageInfo.pSpecializationInfo - позволяет указывать значения для различных констант в shader.frag (здесь пока не используется)
 
   VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
+  VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+  vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+  vertexInputInfo.vertexBindingDescriptionCount = 0;
+  vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
+  vertexInputInfo.vertexAttributeDescriptionCount = 0;
+  vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+
+  VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+  inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+  inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+  inputAssembly.primitiveRestartEnable = VK_FALSE;
+
+  VkViewport viewport{};
+  viewport.x = 0.0f;
+  viewport.y = 0.0f;
+  viewport.width = (float) swapChainExtent.width;
+  viewport.height = (float) swapChainExtent.height;
+  viewport.minDepth = 0.0f;
+  viewport.maxDepth = 1.0f;
+
+  VkRect2D scissor{};
+  scissor.offset = {0, 0};
+  scissor.extent = swapChainExtent;
+
+  VkPipelineViewportStateCreateInfo viewportState{};
+  viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+  viewportState.viewportCount = 1;
+  viewportState.pViewports = &viewport;
+  viewportState.scissorCount = 1;
+  viewportState.pScissors = &scissor;
+
+  VkPipelineRasterizationStateCreateInfo rasterizer{};
+  rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+  rasterizer.depthClampEnable = VK_FALSE;
+
+  rasterizer.rasterizerDiscardEnable = VK_FALSE;
+
+  rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+
+  rasterizer.lineWidth = 1.0f;
+
+  rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+  rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;// порядок обхода вершин для определения лицевых граней (установлена по часовой стрелке)
+
+  rasterizer.depthBiasEnable = VK_FALSE;
+  rasterizer.depthBiasConstantFactor = 0.0f; // Optional
+  rasterizer.depthBiasClamp = 0.0f; // Optional
+  rasterizer.depthBiasSlopeFactor = 0.0f; // Optional
+
+  VkPipelineMultisampleStateCreateInfo multisampling{};
+  multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+  multisampling.sampleShadingEnable = VK_FALSE;
+  multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  multisampling.minSampleShading = 1.0f; // Optional
+  multisampling.pSampleMask = nullptr; // Optional
+  multisampling.alphaToCoverageEnable = VK_FALSE; // Optional
+  multisampling.alphaToOneEnable = VK_FALSE; // Optional
+
+  // настройка этой структуры описана в разделе "Смешивание цветов" на странице https://habr.com/ru/post/554492/
+  VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+  colorBlendAttachment.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  colorBlendAttachment.blendEnable = VK_FALSE;
+  colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+  colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+  colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+  colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+  colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+  colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+
+  VkPipelineColorBlendStateCreateInfo colorBlending{};
+  colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+  colorBlending.logicOpEnable = VK_FALSE;
+  colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
+  colorBlending.attachmentCount = 1;
+  colorBlending.pAttachments = &colorBlendAttachment;
+  colorBlending.blendConstants[0] = 0.0f; // Optional
+  colorBlending.blendConstants[1] = 0.0f; // Optional
+  colorBlending.blendConstants[2] = 0.0f; // Optional
+  colorBlending.blendConstants[3] = 0.0f; // Optional
+
+  VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+  pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+  pipelineLayoutInfo.setLayoutCount = 0; // Optional
+  pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+  pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
+  pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
+
+  if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+    throw std::runtime_error("e2iBqa98dW :: failed to create pipeline layout!");
+  }
 
 
 
