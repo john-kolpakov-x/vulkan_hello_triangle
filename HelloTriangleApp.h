@@ -90,6 +90,11 @@ private:
    */
   VkExtent2D swapChainExtent;
 
+  /**
+   * Размещение вьюшек картинок, которые позволят использовать картинки внутри Vulkan
+   */
+  std::vector<VkImageView> swapChainImageViews;
+
   void initWindow();
 
   void initVulkan();
@@ -124,6 +129,7 @@ private:
 
   /*initVulkan*/void createSwapChain();
 
+  /*initVulkan*/void createImageViews();
 
   void mainLoop();
 

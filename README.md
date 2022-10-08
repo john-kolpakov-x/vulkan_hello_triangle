@@ -8,3 +8,4 @@
 
 4. Перешёл к следующему пункту: Image Views - вьюшки картинок :: https://habr.com/ru/post/543288/
 
+5. Настроить графический конвейер (pipeline) :: https://habr.com/ru/post/547576/
