@@ -116,6 +116,11 @@ private:
    */
   std::vector<VkFramebuffer> swapChainFramebuffers;
 
+  /**
+   * Пул команд
+   */
+  VkCommandPool commandPool;
+
   void initWindow();
 
   void initVulkan();
@@ -159,6 +164,8 @@ private:
   /*initVulkan*/void createRenderPass();
 
   /*initVulkan*/void createFramebuffers();
+
+  /*initVulkan*/void createCommandPool();
 
   void mainLoop();
 
