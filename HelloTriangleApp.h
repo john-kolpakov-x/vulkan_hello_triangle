@@ -121,6 +121,11 @@ private:
    */
   VkCommandPool commandPool;
 
+  /**
+   * Список буферов команд
+   */
+  std::vector<VkCommandBuffer> commandBuffers;
+
   void initWindow();
 
   void initVulkan();
@@ -166,6 +171,8 @@ private:
   /*initVulkan*/void createFramebuffers();
 
   /*initVulkan*/void createCommandPool();
+
+  /*initVulkan*/void createCommandBuffers();
 
   void mainLoop();
 
