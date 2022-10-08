@@ -97,9 +97,19 @@ private:
   std::vector<VkImageView> swapChainImageViews;
 
   /**
+   * Проход рендера
+   */
+  VkRenderPass renderPass;
+
+  /**
    * Здесь задаются значения глобальных переменных, которые используются в шейдерах.
    */
   VkPipelineLayout pipelineLayout;
+
+  /**
+   * Графический конвейер
+   */
+  VkPipeline graphicsPipeline;
 
   void initWindow();
 
@@ -140,6 +150,8 @@ private:
   /*initVulkan*/void createGraphicsPipeline();
 
   /*initVulkan*/VkShaderModule createShaderModule(const std::vector<char>& code);
+
+  /*initVulkan*/void createRenderPass();
 
   void mainLoop();
 
