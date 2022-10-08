@@ -111,6 +111,11 @@ private:
    */
   VkPipeline graphicsPipeline;
 
+  /**
+   * Фреймбуферы
+   */
+  std::vector<VkFramebuffer> swapChainFramebuffers;
+
   void initWindow();
 
   void initVulkan();
@@ -152,6 +157,8 @@ private:
   /*initVulkan*/VkShaderModule createShaderModule(const std::vector<char>& code);
 
   /*initVulkan*/void createRenderPass();
+
+  /*initVulkan*/void createFramebuffers();
 
   void mainLoop();
 
