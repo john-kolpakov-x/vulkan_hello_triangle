@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <optional>
+#include <fstream>
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -131,6 +132,10 @@ private:
 
   /*initVulkan*/void createImageViews();
 
+  /*initVulkan*/void createGraphicsPipeline();
+
+  /*initVulkan*/VkShaderModule createShaderModule(const std::vector<char>& code);
+
   void mainLoop();
 
   void cleanup();
@@ -152,5 +157,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
                                    const VkAllocationCallbacks *pAllocator);
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+
+static std::vector<char> readFile(const std::string& filename);
 
 #endif //VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H
