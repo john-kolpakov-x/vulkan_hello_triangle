@@ -126,6 +126,16 @@ private:
    */
   std::vector<VkCommandBuffer> commandBuffers;
 
+  /**
+   * Семафор, который сообщает, что картинка получена из цепочки вывода, и готова к рендеру.
+   */
+  VkSemaphore imageAvailableSemaphore;
+
+  /**
+   * Семафор, который сообщает, что картинку отрендерили и она готова для показу на экране, т.е. возврату обратно в цепочку вывода.
+   */
+  VkSemaphore renderFinishedSemaphore;
+
   void initWindow();
 
   void initVulkan();
@@ -154,9 +164,9 @@ private:
 
   /*initVulkan*/VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
-  /*initVulkan*/VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+  /*initVulkan*/VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
 
-  /*initVulkan*/VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+  /*initVulkan*/VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
   /*initVulkan*/void createSwapChain();
 
@@ -164,7 +174,7 @@ private:
 
   /*initVulkan*/void createGraphicsPipeline();
 
-  /*initVulkan*/VkShaderModule createShaderModule(const std::vector<char>& code);
+  /*initVulkan*/VkShaderModule createShaderModule(const std::vector<char> &code);
 
   /*initVulkan*/void createRenderPass();
 
@@ -174,7 +184,11 @@ private:
 
   /*initVulkan*/void createCommandBuffers();
 
+  /*initVulkan*/void createSemaphores();
+
   void mainLoop();
+
+  /*mainLoop*/void drawFrame();
 
   void cleanup();
 };
@@ -196,6 +210,6 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
 
-static std::vector<char> readFile(const std::string& filename);
+static std::vector<char> readFile(const std::string &filename);
 
 #endif //VULKAN_HELLO_TRIANGLE_HELLO_TRIANGLE_APP_H

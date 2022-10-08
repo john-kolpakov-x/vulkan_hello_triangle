@@ -57,6 +57,7 @@ void HelloTriangleApp::initVulkan() {
   createFramebuffers();
   createCommandPool();
   createCommandBuffers();
+  createSemaphores();
 }
 
 void HelloTriangleApp::createInstance() {
@@ -139,10 +140,16 @@ void HelloTriangleApp::createInstance() {
 void HelloTriangleApp::mainLoop() {
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
+    drawFrame();
   }
+
+  vkDeviceWaitIdle(device);
 }
 
 void HelloTriangleApp::cleanup() {
+  vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+  vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+
   vkDestroyCommandPool(device, commandPool, nullptr);
 
   for (auto framebuffer: swapChainFramebuffers) {
@@ -728,6 +735,23 @@ void HelloTriangleApp::createRenderPass() {
   renderPassInfo.subpassCount = 1;
   renderPassInfo.pSubpasses = &subpass;
 
+  VkSubpassDependency dependency{};
+  dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+  dependency.dstSubpass = 0;// индекс нашего единственного под-прохода
+  /*
+   Значение dependency.dstSubpass всегда должно быть больше, чем dependency.srcSubpass, чтобы не допустить циклов в графе зависимостей,
+   за исключением случая, когда один из под-проходов == VK_SUBPASS_EXTERNAL
+   */
+
+  dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  dependency.srcAccessMask = 0;
+
+  dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+  renderPassInfo.dependencyCount = 1;
+  renderPassInfo.pDependencies = &dependency;
+
   if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
     throw std::runtime_error("17CE02aKu2 :: failed to create render pass!");
   }
@@ -978,6 +1002,59 @@ void HelloTriangleApp::createCommandBuffers() {
     }
 
   }
+}
 
+void HelloTriangleApp::createSemaphores() {
+  VkSemaphoreCreateInfo semaphoreInfo{};
+  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
+  if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS) {
+    throw std::runtime_error("d6eVpkU44N :: failed to create semaphores!");
+  }
+
+  if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS) {
+    throw std::runtime_error("oN2fyWdRr3 :: failed to create semaphores!");
+  }
+}
+
+void HelloTriangleApp::drawFrame() {
+  uint32_t imageIndex;// номер картинки в массиве swapChainImages
+  vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkSemaphore waitSemaphores[] = {imageAvailableSemaphore};
+  VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = waitSemaphores;
+  submitInfo.pWaitDstStageMask = waitStages;
+
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+
+  VkSemaphore signalSemaphores[] = {renderFinishedSemaphore};
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = signalSemaphores;
+
+  if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+    throw std::runtime_error("31HU9JxO6y :: failed to submit draw command buffer!");
+  }
+
+  VkPresentInfoKHR presentInfo{};
+  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = signalSemaphores;
+
+  VkSwapchainKHR swapChains[] = {swapChain};
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = swapChains;
+  presentInfo.pImageIndices = &imageIndex;
+
+  presentInfo.pResults = nullptr; // Optional
+
+  if (vkQueuePresentKHR(presentQueue, &presentInfo) != VK_SUCCESS) {
+    throw std::runtime_error("y5y3VC107N :: failed vkQueuePresentKHR");
+  }
 }
