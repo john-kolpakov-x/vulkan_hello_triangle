@@ -127,14 +127,33 @@ private:
   std::vector<VkCommandBuffer> commandBuffers;
 
   /**
-   * Семафор, который сообщает, что картинка получена из цепочки вывода, и готова к рендеру.
+   * Массив семафоров для каждого кадра.
+   * Каждый семафор из этого массива сообщает, что картинка получена из цепочки вывода, и готова к рендеру.
    */
-  VkSemaphore imageAvailableSemaphore;
+  std::vector<VkSemaphore> imageAvailableSemaphores;
 
   /**
-   * Семафор, который сообщает, что картинку отрендерили и она готова для показу на экране, т.е. возврату обратно в цепочку вывода.
+   * Массив семафоров для каждого кадра.
+   * Каждый семафор из этого массива сообщает, что картинку отрендерили и она готова для показу на экране, т.е. возврату обратно в цепочку вывода.
    */
-  VkSemaphore renderFinishedSemaphore;
+  std::vector<VkSemaphore> renderFinishedSemaphores;
+
+  /**
+   * Барьеры для каждого кадра.
+   *
+   * Каждый барьер из этого массива предназначен для того, чтобы GPU сообщил CPU, что можно начать прорисовывать очередной кадр
+   */
+  std::vector<VkFence> inFlightFences;
+
+  /**
+   * Барьеры (вспомогательные).
+   */
+  std::vector<VkFence> imagesInFlight;
+
+  /**
+   * Индекс кадра
+   */
+  size_t currentFrame = 0;
 
   void initWindow();
 
@@ -184,7 +203,7 @@ private:
 
   /*initVulkan*/void createCommandBuffers();
 
-  /*initVulkan*/void createSemaphores();
+  /*initVulkan*/void createSyncObjects();
 
   void mainLoop();
 
