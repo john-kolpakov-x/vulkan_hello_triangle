@@ -153,8 +153,6 @@ void HelloTriangleApp::createInstance() {
   if (result != VK_SUCCESS) {
     throw std::runtime_error("LsL60VI8oa :: failed to create instance!");
   }
-
-
 }
 
 
@@ -166,7 +164,6 @@ void HelloTriangleApp::mainLoop() {
 
   vkDeviceWaitIdle(device);
 }
-
 
 void HelloTriangleApp::cleanupSwapChain() {
   for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
@@ -278,7 +275,6 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
     func(instance, debugMessenger, pAllocator);
   }
 }
-
 
 void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
   createInfo = {};
@@ -1176,18 +1172,67 @@ void HelloTriangleApp::createBuffer(VkDeviceSize size,
 
 void HelloTriangleApp::createVertexBuffer() {
   VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+  VkBuffer stagingBuffer;
+  VkDeviceMemory stagingBufferMemory;
   createBuffer(bufferSize,
-               VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+               VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+               stagingBuffer,
+               stagingBufferMemory);
+
+  void *data;
+  vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+  memcpy(data, vertices.data(), (size_t) bufferSize);
+  vkUnmapMemory(device, stagingBufferMemory);
+
+  createBuffer(bufferSize,
+               VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+               VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
                vertexBuffer,
                vertexBufferMemory);
 
-  void *data;
-  vkMapMemory(device, vertexBufferMemory, 0, bufferSize, 0, &data);
+  copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
-  memcpy(data, vertices.data(), (size_t) bufferSize);
+  vkDestroyBuffer(device, stagingBuffer, nullptr);
+  vkFreeMemory(device, stagingBufferMemory, nullptr);
 
-  vkUnmapMemory(device, vertexBufferMemory);
+}
+
+void HelloTriangleApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+  VkCommandBufferAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  allocInfo.commandPool = commandPool;
+  allocInfo.commandBufferCount = 1;
+
+  VkCommandBuffer commandBuffer;
+  if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+    throw std::runtime_error("qKvLH5Mxo2 :: failed to vkAllocateCommandBuffers");
+  }
+
+  VkCommandBufferBeginInfo beginInfo{};
+  beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+  vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+  VkBufferCopy copyRegion{};
+  copyRegion.srcOffset = 0; // Optional
+  copyRegion.dstOffset = 0; // Optional
+  copyRegion.size = size;
+  vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+  vkEndCommandBuffer(commandBuffer);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffer;
+
+  vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+  vkQueueWaitIdle(graphicsQueue);
+
+  vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 
 }
 
