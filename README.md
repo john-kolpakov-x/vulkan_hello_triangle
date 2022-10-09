@@ -30,3 +30,6 @@
       https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator
 
 13. Сделал быстрые буфера. Теперь надо замутить индексный буфер :: https://habr.com/ru/post/579600/
+
+14. Следующая статья: Uniform-буферы :: https://habr.com/ru/post/582838/
+
