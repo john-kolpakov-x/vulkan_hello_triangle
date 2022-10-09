@@ -23,6 +23,8 @@ struct SwapChainSupportDetails {
   std::vector<VkPresentModeKHR> presentModes;
 };
 
+static void framebufferResizeCallback(GLFWwindow *window, int width, int height);
+
 class HelloTriangleApp {
 public:
   int run();
@@ -155,6 +157,13 @@ private:
    */
   size_t currentFrame = 0;
 
+  /**
+   * Используется для пересоздания буферов картинок в случае изменения размеров главного окна
+   */
+  bool framebufferResized = false;
+
+  friend void framebufferResizeCallback(GLFWwindow *window, int width, int height);
+
   void initWindow();
 
   void initVulkan();
@@ -204,6 +213,10 @@ private:
   /*initVulkan*/void createCommandBuffers();
 
   /*initVulkan*/void createSyncObjects();
+
+  void recreateSwapChain();
+
+  void cleanupSwapChain();
 
   void mainLoop();
 
