@@ -260,6 +260,12 @@ private:
 
   /*initVulkan*/void createVertexBuffer();
 
+  /*initVulkan*/void createBuffer(VkDeviceSize size,
+                                  VkBufferUsageFlags usage,
+                                  VkMemoryPropertyFlags properties,
+                                  VkBuffer &buffer,
+                                  VkDeviceMemory &bufferMemory);
+
   /*initVulkan*/uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 
