@@ -206,6 +206,16 @@ private:
    */
   VkDeviceMemory vertexBufferMemory;
 
+  /**
+   * Дескриптор индексного буфера для вершин
+   */
+  VkBuffer indexBuffer;
+
+  /**
+   * Дескриптор памяти для хранения индексного буфера
+   */
+  VkDeviceMemory indexBufferMemory;
+
   friend void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 
   void initWindow();
@@ -259,6 +269,8 @@ private:
   /*initVulkan*/void createSyncObjects();
 
   /*initVulkan*/void createVertexBuffer();
+
+  /*initVulkan*/void createIndexBuffer();
 
   /*initVulkan*/void createBuffer(VkDeviceSize size,
                                   VkBufferUsageFlags usage,
